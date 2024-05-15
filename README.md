@@ -21,3 +21,12 @@
     ├── data                            <- Данные для обучения
     ├── notebooks                       <- Наработки в формате .py / .ipynb
     └── make_submission.py              <- Скрипт генерации посылки в соревновании
+
+#### 3. Установка
+------------
+
+##### 3.1 Разработка
+
+Для подключения pre-commit использовать следующие команды
+<code>pip install -r requirements-dev.txt</code>
+<code>pre-commit install</code>
