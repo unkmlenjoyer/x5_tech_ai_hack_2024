@@ -18,7 +18,6 @@ from transformers import (
     DataCollatorForTokenClassification,
     Trainer,
     TrainingArguments,
-    pipeline,
 )
 
 # %%
@@ -159,13 +158,13 @@ def compute_metrics(pred_input):
     predictions = np.argmax(predictions, axis=2)
 
     y_pred = [
-        [id2label[p] for p, lp in zip(pred, label) if lp != -100]
-        for pred, label in zip(predictions, labels)
+        [id2label[p] for (p, lp) in zip(pred, label) if lp != -100]
+        for (pred, label) in zip(predictions, labels)
     ]
 
     y_true = [
-        [id2label[lp] for p, lp in zip(pred, label) if lp != -100]
-        for pred, label in zip(predictions, labels)
+        [id2label[lp] for (p, lp) in zip(pred, label) if lp != -100]
+        for (pred, label) in zip(predictions, labels)
     ]
 
     results = classification_report(
@@ -192,7 +191,6 @@ model = AutoModelForTokenClassification.from_pretrained(
 )
 
 tr_args = TrainingArguments(
-    output_dir="rubert_tiny2_v1",
     learning_rate=4e-4,
     per_device_train_batch_size=32,
     per_device_eval_batch_size=32,
@@ -201,7 +199,8 @@ tr_args = TrainingArguments(
     eval_strategy="epoch",
     save_strategy="no",
     push_to_hub=False,
-    logging_steps=10,
+    logging_strategy="epoch",
+    lr_scheduler_type="cosine",
     seed=conf.random_seed,
     data_seed=conf.random_seed,
 )
@@ -223,15 +222,3 @@ trainer.evaluate(tokenized_datasets["train"])
 
 # %%
 trainer.evaluate(tokenized_datasets["test"])
-# %%
-text = "**Критикуйте конструктивно, а не публично.**\n\nЕсли у вас есть вопросы или предложения по улучшению работы компании, вы можете поговорить об этом со своим руководителем, написать на электронный ящик горячей линии krasilnikovamos@gruppa.edu или оставить комментарий на [корпоративном портале.](http://rao.org/)\n\n**Воздержитесь от критики конкурентов.**"
-# %%
-pipe = pipeline(
-    model=model, tokenizer=tokenizer, task="ner", aggregation_strategy="average"
-)
-# %%
-pipe(text)
-
-# %%
-model.save_pretrained("models/rubert_tiny2_v1")
-tokenizer.save_pretrained("models/rubert_tiny2_v1")
